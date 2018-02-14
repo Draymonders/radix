@@ -44,12 +44,22 @@ func (n *node) addEdge(e edge) {
 	n.edges.Sort()
 }
 
+func (n *node) search(label byte) int {
+	i, j := 0, len(n.edges)
+	for i < j {
+		h := int(uint(i+j) >> 1)
+		if !(n.edges[h].label >= label) {
+			i = h + 1
+		} else {
+			j = h
+		}
+	}
+	return i
+}
+
 func (n *node) replaceEdge(e edge) {
-	num := len(n.edges)
-	idx := sort.Search(num, func(i int) bool {
-		return n.edges[i].label >= e.label
-	})
-	if idx < num && n.edges[idx].label == e.label {
+	idx := n.search(e.label)
+	if idx < len(n.edges) && n.edges[idx].label == e.label {
 		n.edges[idx].node = e.node
 		return
 	}
@@ -57,22 +67,16 @@ func (n *node) replaceEdge(e edge) {
 }
 
 func (n *node) getEdge(label byte) *node {
-	num := len(n.edges)
-	idx := sort.Search(num, func(i int) bool {
-		return n.edges[i].label >= label
-	})
-	if idx < num && n.edges[idx].label == label {
+	idx := n.search(label)
+	if idx < len(n.edges) && n.edges[idx].label == label {
 		return n.edges[idx].node
 	}
 	return nil
 }
 
 func (n *node) delEdge(label byte) {
-	num := len(n.edges)
-	idx := sort.Search(num, func(i int) bool {
-		return n.edges[i].label >= label
-	})
-	if idx < num && n.edges[idx].label == label {
+	idx := n.search(label)
+	if idx < len(n.edges) && n.edges[idx].label == label {
 		copy(n.edges[idx:], n.edges[idx+1:])
 		n.edges[len(n.edges)-1] = edge{}
 		n.edges = n.edges[:len(n.edges)-1]
