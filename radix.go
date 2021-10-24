@@ -44,11 +44,12 @@ func (n *node) addEdge(e edge) {
 	n.edges.Sort()
 }
 
+// 二分查找，找到 >= label的 nodes.label的 pos
 func (n *node) search(label byte) int {
 	i, j := 0, len(n.edges)
 	for i < j {
 		h := int(uint(i+j) >> 1)
-		if !(n.edges[h].label >= label) {
+		if !(n.edges[h].label >= label) { // n.edges[h].label < label
 			i = h + 1
 		} else {
 			j = h
@@ -78,7 +79,7 @@ func (n *node) delEdge(label byte) {
 	idx := n.search(label)
 	if idx < len(n.edges) && n.edges[idx].label == label {
 		copy(n.edges[idx:], n.edges[idx+1:])
-		n.edges[len(n.edges)-1] = edge{}
+		n.edges[len(n.edges)-1] = edge{} // 这句话的必要性？，貌似没啥用
 		n.edges = n.edges[:len(n.edges)-1]
 	}
 }
@@ -148,6 +149,7 @@ func longestPrefix(k1, k2 string) int {
 
 // Insert is used to add a newentry or update
 // an existing entry. Returns if updated.
+// (interface{}, bool) => oldVal, if updated or new one
 func (t *Tree) Insert(s string, v interface{}) (interface{}, bool) {
 	var parent *node
 	n := t.root
@@ -189,18 +191,20 @@ func (t *Tree) Insert(s string, v interface{}) (interface{}, bool) {
 			t.size++
 			return nil, false
 		}
+		// 到这里n的label 和 search的label是一样的
 
 		// Determine longest prefix of the search key on match
-		commonPrefix := longestPrefix(search, n.prefix)
-		if commonPrefix == len(n.prefix) {
-			search = search[commonPrefix:]
-			continue
+		commonPrefixIdx := longestPrefix(search, n.prefix)
+		if commonPrefixIdx == len(n.prefix) {
+			search = search[commonPrefixIdx:]
+			continue // 这里是使用for循环的关键
 		}
 
 		// Split the node
+		// 目前tree上有 foo 了，当前search是 fotbar
 		t.size++
 		child := &node{
-			prefix: search[:commonPrefix],
+			prefix: search[:commonPrefixIdx],
 		}
 		parent.replaceEdge(edge{
 			label: search[0],
@@ -209,10 +213,10 @@ func (t *Tree) Insert(s string, v interface{}) (interface{}, bool) {
 
 		// Restore the existing node
 		child.addEdge(edge{
-			label: n.prefix[commonPrefix],
+			label: n.prefix[commonPrefixIdx],
 			node:  n,
 		})
-		n.prefix = n.prefix[commonPrefix:]
+		n.prefix = n.prefix[commonPrefixIdx:]
 
 		// Create a new leaf node
 		leaf := &leafNode{
@@ -221,7 +225,7 @@ func (t *Tree) Insert(s string, v interface{}) (interface{}, bool) {
 		}
 
 		// If the new key is a subset, add to to this node
-		search = search[commonPrefix:]
+		search = search[commonPrefixIdx:]
 		if len(search) == 0 {
 			child.leaf = leaf
 			return nil, false

@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 )
 
 func TestRadix(t *testing.T) {
@@ -356,4 +357,23 @@ func generateUUID() string {
 		buf[6:8],
 		buf[8:10],
 		buf[10:16])
+}
+
+func Test_Insert(t *testing.T) {
+	tree := New()
+	tree.Insert("foo", 1)
+	tree.Insert("bar", 2)
+	tree.Insert("foobar", 3)
+	tree.Insert("fotbar", 4)
+
+	time.Sleep(1000 * time.Second)
+}
+
+func Test_SimpleInsert(t *testing.T) {
+	tree := New()
+
+	tree.Insert("foo", 1)
+	tree.Insert("fotbar", 2)
+
+	time.Sleep(1000 * time.Second)
 }
