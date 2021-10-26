@@ -377,3 +377,12 @@ func Test_SimpleInsert(t *testing.T) {
 
 	time.Sleep(1000 * time.Second)
 }
+
+// 测试发现目前还不支持中文
+func Test_ZhongwenInsert(t *testing.T) {
+	tree := New()
+
+	tree.Insert("张钰炳", 1)
+	tree.Insert("张钰焯", 2)
+	time.Sleep(100 * time.Second)
+}
